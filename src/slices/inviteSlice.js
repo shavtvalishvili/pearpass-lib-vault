@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 import { createInvite } from '../actions/createInvite'
+import { createReadOnlyInvite } from '../actions/createReadOnlyInvite'
 import { deleteInvite } from '../actions/deleteInvite'
 import { resetState } from '../actions/resetState'
 import { logger } from '../utils/logger'
@@ -8,7 +9,8 @@ import { logger } from '../utils/logger'
 const initialState = {
   isLoading: false,
   error: null,
-  data: null
+  data: null,
+  selectedAccessLevel: 'edit' // 'edit' | 'read-only' - for share modal selection
 }
 
 const setPending = (state) => {
@@ -27,14 +29,22 @@ const setRejected = (state, action) => {
   state.error = action.error
 }
 
-export const vaultSlice = createSlice({
-  name: 'vault',
+export const inviteSlice = createSlice({
+  name: 'invite',
   initialState,
+  reducers: {
+    setSelectedAccessLevel: (state, action) => {
+      state.selectedAccessLevel = action.payload
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(createInvite.pending, setPending)
       .addCase(createInvite.fulfilled, setFulfilled)
       .addCase(createInvite.rejected, setRejected)
+      .addCase(createReadOnlyInvite.pending, setPending)
+      .addCase(createReadOnlyInvite.fulfilled, setFulfilled)
+      .addCase(createReadOnlyInvite.rejected, setRejected)
       .addCase(deleteInvite.pending, setPending)
       .addCase(deleteInvite.fulfilled, setFulfilled)
       .addCase(deleteInvite.rejected, setRejected)
@@ -44,4 +54,6 @@ export const vaultSlice = createSlice({
   }
 })
 
-export default vaultSlice.reducer
+export const { setSelectedAccessLevel } = inviteSlice.actions
+
+export default inviteSlice.reducer

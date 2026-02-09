@@ -21,12 +21,18 @@ const initialState = {
   isFolderLoading: false,
   isDeviceLoading: false,
   data: null,
-  error: null
+  error: null,
+  accessLevel: 'edit' // 'edit' | 'read-only'
 }
 
 export const vaultSlice = createSlice({
   name: 'vault',
   initialState: initialState,
+  reducers: {
+    setAccessLevel: (state, action) => {
+      state.accessLevel = action.payload
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getVaultById.pending, (state) => {
@@ -212,8 +218,11 @@ export const vaultSlice = createSlice({
       state.isRecordLoading = initialState.isRecordLoading
       state.isFolderLoading = initialState.isFolderLoading
       state.isDeviceLoading = initialState.isDeviceLoading
+      state.accessLevel = initialState.accessLevel
     })
   }
 })
+
+export const { setAccessLevel } = vaultSlice.actions
 
 export default vaultSlice.reducer

@@ -7,9 +7,10 @@ import { validateAndPrepareDevice } from './validateAndPrepareDevice'
  *  data: object,
  * }} payload
  * @param {string} vaultId
+ * @param {'edit' | 'read-only'} accessLevel - Access level for the device, defaults to 'edit'
  * @returns {Object}
  */
-export const addDeviceFactory = (payload, vaultId) => {
+export const addDeviceFactory = (payload, vaultId, accessLevel = 'edit') => {
   if (!payload || !vaultId) {
     throw new Error('Payload and vaultId are required')
   }
@@ -18,7 +19,8 @@ export const addDeviceFactory = (payload, vaultId) => {
     id: generateUniqueId(),
     vaultId: vaultId,
     name: payload,
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    accessLevel: accessLevel
   }
 
   return validateAndPrepareDevice(device)

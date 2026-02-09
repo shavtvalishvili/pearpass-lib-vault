@@ -6,7 +6,8 @@ export const deviceSchema = Validator.object({
   id: Validator.string().required(),
   vaultId: Validator.string().required(),
   name: Validator.string().required(),
-  createdAt: Validator.number().required()
+  createdAt: Validator.number().required(),
+  accessLevel: Validator.string() // 'edit' | 'read-only', defaults to 'edit'
 })
 
 export const validateAndPrepareDevice = (device) => {
