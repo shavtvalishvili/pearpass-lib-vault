@@ -6,7 +6,6 @@ import { useDispatch } from 'react-redux'
 import { getVaultById } from '../actions/getVaultById'
 import { cancelPairActiveVault as cancelPairActiveVaultApi } from '../api/cancelPairActiveVault'
 import { initListener } from '../api/initListener'
-import { joinReadOnlyVault as joinReadOnlyVaultApi } from '../api/joinReadOnlyVault'
 import { pairActiveVault as pairActiveVaultApi } from '../api/pairActiveVault'
 import { setAccessLevel } from '../slices/vaultSlice'
 import { parseShareLink } from '../utils/parseShareLink'
@@ -29,35 +28,25 @@ export const usePair = () => {
     try {
       const parsed = parseShareLink(inviteCode)
 
-      let vaultId
-      if (parsed.accessLevel === 'read-only') {
-        // Join read-only vault
-        const result = await joinReadOnlyVaultApi({
-          vaultId: parsed.vaultId,
-          key: parsed.key,
-          encryptionKey: parsed.encryptionKey
-        })
-        vaultId = result.vaultId
+      // Normal pairing flow for both edit and read-only
+      const pairCode =
+        parsed.accessLevel === 'read-only'
+          ? `${parsed.vaultId}/${parsed.inviteCode}`
+          : inviteCode
 
-        // Set access level in state
-        dispatch(setAccessLevel('read-only'))
-      } else {
-        // Normal pairing flow with timeout
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(
-            () => reject(new Error('Request timed out')),
-            MS_PER_SECOND * 30
-          )
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Request timed out')),
+          MS_PER_SECOND * 30
         )
+      )
 
-        vaultId = await Promise.race([
-          pairActiveVaultApi(inviteCode),
-          timeoutPromise
-        ])
+      const vaultId = await Promise.race([
+        pairActiveVaultApi(pairCode),
+        timeoutPromise
+      ])
 
-        // Set access level in state
-        dispatch(setAccessLevel('edit'))
-      }
+      dispatch(setAccessLevel(parsed.accessLevel))
 
       await initListener({
         vaultId,

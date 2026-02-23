@@ -3,14 +3,12 @@
  *
  * Supported formats:
  * - Edit access: {vaultId}/{inviteCode}
- * - Read-only access: {vaultId}/ro/{key}/{encryptionKey}
+ * - Read-only access: {vaultId}/ro/{inviteCode}
  *
  * @param {string} code - The share link/invite code
  * @returns {{
  *   vaultId: string,
- *   inviteCode?: string,
- *   key?: string,
- *   encryptionKey?: string,
+ *   inviteCode: string,
  *   accessLevel: 'edit' | 'read-only',
  * }}
  */
@@ -36,18 +34,17 @@ export const parseShareLink = (code) => {
     }
   }
 
-  // Read-only access format: {vaultId}/ro/{key}/{encryptionKey}
-  if (parts.length === 4 && parts[1] === 'ro') {
-    const [vaultId, , key, encryptionKey] = parts
+  // Read-only access format: {vaultId}/ro/{inviteCode}
+  if (parts.length === 3 && parts[1] === 'ro') {
+    const [vaultId, , inviteCode] = parts
 
-    if (!vaultId || !key || !encryptionKey) {
+    if (!vaultId || !inviteCode) {
       throw new Error('Invalid read-only share link format')
     }
 
     return {
       vaultId,
-      key,
-      encryptionKey,
+      inviteCode,
       accessLevel: 'read-only'
     }
   }
