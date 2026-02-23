@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useDispatch, useSelector } from 'react-redux'
 
 import { addDevice as addDeviceAction } from '../actions/addDevice.js'
@@ -34,6 +36,7 @@ import { logger } from '../utils/logger'
  *        }) => Promise<any>
  *      isVaultProtected: (vaultId: string) => Promise<boolean>
  *      resetState: () => void
+ *      syncVault: () => Promise<boolean>
  *  }}
  */
 export const useVault = ({ variables } = {}) => {
@@ -62,8 +65,11 @@ export const useVault = ({ variables } = {}) => {
 
     await initListener({
       vaultId: vaultId,
-      onUpdate: () => {
-        dispatch(getVaultById({ vaultId }))
+      onUpdate: async () => {
+        const current = await getCurrentVault()
+        if (current) {
+          dispatch(getVaultById({ vaultId: current.id }))
+        }
       }
     })
 
@@ -134,6 +140,19 @@ export const useVault = ({ variables } = {}) => {
     }
   }
 
+  const syncVault = useCallback(async () => {
+    const backendVault = await getCurrentVault()
+
+    if (backendVault?.id && backendVault.id !== data?.id) {
+      await dispatch(getVaults())
+      await fetchVault(backendVault.id)
+
+      return true
+    }
+
+    return false
+  }, [data?.id])
+
   const resetState = () => {
     dispatch(resetStateAction())
   }
@@ -147,6 +166,7 @@ export const useVault = ({ variables } = {}) => {
     isVaultProtected,
     resetState,
     updateUnprotectedVault,
-    updateProtectedVault
+    updateProtectedVault,
+    syncVault
   }
 }
