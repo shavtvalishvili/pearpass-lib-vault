@@ -91,8 +91,9 @@ export const useVault = ({ variables } = {}) => {
     return vault
   }
 
-  const addDevice = async (device) => {
-    const { error: createError } = await dispatch(addDeviceAction(device))
+  const addDevice = async (device, accessLevel) => {
+    const payload = accessLevel ? { name: device, accessLevel } : device
+    const { error: createError } = await dispatch(addDeviceAction(payload))
 
     await refetch()
 

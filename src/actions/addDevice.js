@@ -7,13 +7,17 @@ import { logger } from '../utils/logger'
 export const addDevice = createAsyncThunk(
   'vault/addDevice',
   async (payload, { getState }) => {
+    const name = typeof payload === 'string' ? payload : payload.name
+    const accessLevel =
+      typeof payload === 'string' ? undefined : payload.accessLevel
+
     const state = getState()
     const vaultState = state.vault
     const vaultId = vaultState.data.id
     const existingDevices = vaultState.data?.devices ?? []
 
     const existingDevice = existingDevices.find(
-      (device) => device.name === payload
+      (device) => device.name === name
     )
 
     if (existingDevice) {
@@ -21,7 +25,7 @@ export const addDevice = createAsyncThunk(
       return existingDevice
     }
 
-    const newDevice = addDeviceFactory(payload, vaultId)
+    const newDevice = addDeviceFactory(name, vaultId, accessLevel)
 
     await addDeviceApi(newDevice)
 
